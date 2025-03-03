@@ -21,8 +21,12 @@ jobs:
           node-version: 18
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Install dependencies (with lock file regeneration)
+        run: |
+          # Remove the potentially outdated lock file
+          rm -f package-lock.json
+          # Install dependencies and generate a fresh lock file
+          npm install
 
       - name: Build
         run: npm run build
