@@ -19,7 +19,7 @@ const GameSuccess: React.FC = () => {
         <div className="flex justify-center mb-4">
           <Award className="h-16 w-16 text-yellow-500" />
         </div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">Level Complete!</h2>
+        <h2 className="text-2xl font-bold text-white-800 mb-2">Level Complete!</h2>
         <p className="text-gray-600">{state.message}</p>
       </div>
       

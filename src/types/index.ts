@@ -1,23 +1,26 @@
+export interface Reaction {
+  type: 'mix' | 'heat' | 'dilute';
+  reactant: string;
+  reactant2?: string;                // Keep this for compatibility 
+  secondReactant?: string;           // Add this to match your levels data
+  reactantState?: 'solid' | 'liquid' | 'gas';
+  secondReactantState?: 'solid' | 'liquid' | 'gas';
+  product: string;
+  productName?: string;
+  productColor?: string;
+  productState?: 'solid' | 'liquid' | 'gas';
+  productConcentration?: number;
+}
+
+// Make sure your Chemical interface has properly typed state
 export interface Chemical {
   id: string;
   name: string;
   formula: string;
   color: string;
-  concentration: number; // in mol/L
-  volume: number; // in mL
-  state?: 'solid' | 'liquid' | 'gas'; // physical state
-}
-
-export interface Reaction {
-  type: 'heat' | 'mix';
-  reactant: string; // formula of reactant
-  reactantState?: 'solid' | 'liquid' | 'gas'; // optional state requirement
-  secondReactant?: string; // for mix reactions
-  secondReactantState?: 'solid' | 'liquid' | 'gas'; // optional state requirement
-  product: string; // formula of product
-  productName?: string; // name of product (if different from formula)
-  productColor?: string; // color of product solution
-  productState?: 'solid' | 'liquid' | 'gas'; // state of product
+  concentration: number;
+  volume: number;
+  state?: 'solid' | 'liquid' | 'gas';
 }
 
 export interface Level {
@@ -46,10 +49,11 @@ export interface GameState {
   inventory: Chemical[];
   activeSolution: Chemical | null;
   targetSolution: Chemical | null;
+  currentSolution: Chemical | null;  // Add this line
   score: number;
   attempts: number;
-  actionsRemaining: number | null; // null means unlimited actions
-  gameStatus: 'menu' | 'playing' | 'success' | 'failure';
+  actionsRemaining: number | null;
+  gameStatus: 'menu' | 'playing' | 'success';
   message: string;
 }
 
@@ -63,6 +67,6 @@ export type Action =
   | { type: 'HEAT_SOLUTION'; payload: { solution: Chemical; resultId: string } }
   | { type: 'CHECK_SOLUTION'; payload: { solution: Chemical } }
   | { type: 'NEXT_LEVEL' }
-  | { type: 'RESTART_LEVEL' }
+  | { type: 'RESTART_LEVEL' }  // Keep this one
   | { type: 'RETURN_TO_MENU' }
   | { type: 'SET_MESSAGE'; payload: string };

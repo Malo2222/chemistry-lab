@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGame } from '../context/GameContext';
 import ChemicalItem from './ChemicalItem';
 import { Beaker, FlaskRound as Flask, Pipette, Trash2, FlipHorizontal as MixerHorizontal, Droplets, Info, ArrowRight, Flame, Thermometer, Scissors, Moon, Sun } from 'lucide-react';
+import { Home } from 'lucide-react';
 
 const LabBench: React.FC = () => {
   const { state, dispatch } = useGame();
@@ -10,7 +11,7 @@ const LabBench: React.FC = () => {
   const [showTheory, setShowTheory] = useState<boolean>(false);
   const [showTutorial, setShowTutorial] = useState<boolean>(true);
   const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   
   const currentLevel = state.levels[state.currentLevel - 1];
   
@@ -19,7 +20,55 @@ const LabBench: React.FC = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.setAttribute('data-theme', !isDarkMode ? 'dark' : 'light');
   };
-  
+  const renderSolutionComparison = () => {
+    if (!state.currentSolution || !state.targetSolution) return null;
+    
+    const target = state.levels[state.currentLevel - 1].targetSolution;
+    const tolerance = target.tolerance || 5;
+    
+    const concDiff = Math.abs((state.currentSolution.concentration - target.concentration) / target.concentration) * 100;
+    const volumeDiff = Math.abs((state.currentSolution.volume - target.volume) / target.volume) * 100;
+    
+    const concWithinTolerance = concDiff <= tolerance;
+    const volWithinTolerance = volumeDiff <= tolerance;
+    
+    return (
+      <div className="mt-3 p-2 bg-slate-50 dark:bg-slate-800 rounded border">
+        <h4 className="text-sm font-medium mb-1">Progress</h4>
+        <div className="space-y-2">
+          <div>
+            <div className="flex justify-between text-xs mb-1">
+              <span>Concentration Difference:</span>
+              <span className={concWithinTolerance ? 'text-green-600' : 'text-red-600'}>
+                {concDiff.toFixed(1)}%
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded overflow-hidden">
+              <div 
+                className={`h-2 ${concWithinTolerance ? 'bg-green-500' : 'bg-red-500'}`}
+                style={{ width: `${Math.min(100, 100 - concDiff)}%` }}
+              ></div>
+            </div>
+          </div>
+          
+          <div>
+            <div className="flex justify-between text-xs mb-1">
+              <span>Volume Difference:</span>
+              <span className={volWithinTolerance ? 'text-green-600' : 'text-red-600'}>
+                {volumeDiff.toFixed(1)}%
+              </span>
+            </div>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded overflow-hidden">
+              <div 
+                className={`h-2 ${volWithinTolerance ? 'bg-green-500' : 'bg-red-500'}`}
+                style={{ width: `${Math.min(100, 100 - volumeDiff)}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
   // Handle solution selection
   const handleSolutionSelect = (solutionId: string) => {
     setSelectedSolutions(prev => {
@@ -57,10 +106,9 @@ const LabBench: React.FC = () => {
     // Check for reactions based on mixing
     const mixReaction = currentLevel.reactions?.find(r => 
       r.type === 'mix' && 
-      ((r.reactant === solution1.formula && r.secondReactant === solution2.formula) ||
-       (r.reactant === solution2.formula && r.secondReactant === solution1.formula)) &&
-      (r.reactantState === undefined || r.reactantState === solution1.state) &&
-      (r.secondReactantState === undefined || r.secondReactantState === solution2.state)
+      ((r.reactant === solution1.formula && r.reactant2 === solution2.formula) ||
+       (r.reactant === solution2.formula && r.reactant2 === solution1.formula)) &&
+      (r.reactantState === undefined || r.reactantState === solution1.state) 
     );
     
     if (mixReaction) {
@@ -344,11 +392,13 @@ const LabBench: React.FC = () => {
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="space-y-2">
           <h3 className="font-medium">Target Solution</h3>
-          <ChemicalItem chemical={currentLevel.target} type="flask" />
+          <ChemicalItem chemical={state.targetSolution || undefined} type="flask" />
         </div>
         <div className="space-y-2">
           <h3 className="font-medium">Your Solution</h3>
-          <ChemicalItem chemical={state.currentSolution} type="flask" />
+          <ChemicalItem chemical={state.currentSolution || undefined} type="flask" />
+          {state.currentSolution && renderSolutionComparison()}
+
         </div>
       </div>
       
@@ -369,62 +419,108 @@ const LabBench: React.FC = () => {
         </div>
       </div>
       
-      <div className="flex flex-wrap gap-2">
-        <button
-          className="btn-primary"
-          onClick={handleMix}
-          disabled={selectedSolutions.length !== 2}
-        >
-          <MixerHorizontal size={18} />
-          Mix
-        </button>
-        <button
-          className="btn-secondary"
-          onClick={handleDilute}
-          disabled={!state.activeSolution}
-        >
-          <Droplets size={18} />
-          Dilute
-        </button>
-        <button
-          className="btn-secondary"
-          onClick={handleReduceVolume}
-          disabled={!state.activeSolution}
-        >
-          <Scissors size={18} />
-          Reduce
-        </button>
-        <button
-          className="btn-secondary"
-          onClick={handleHeatSolution}
-          disabled={!state.activeSolution}
-        >
-          <Flame size={18} />
-          Heat
-        </button>
-        <button
-          className="btn-secondary"
-          onClick={handleCheckSolution}
-          disabled={!state.currentSolution}
-        >
-          <Info size={18} />
-          Check
-        </button>
-        <button
-          className="btn-danger"
-          onClick={() => dispatch({ type: 'RESET_LEVEL' })}
-        >
-          <Trash2 size={18} />
-          Reset
-        </button>
-      </div>
       
-      {state.message && (
-        <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
-          {state.message}
-        </div>
-      )}
-    </div>
+<div className="flex flex-wrap gap-2 mb-4">
+  <button
+    className="btn-primary"
+    onClick={handleMix}
+    disabled={selectedSolutions.length !== 2}
+  >
+    <MixerHorizontal size={18} />
+    Mix
+  </button>
+  
+  <div className="flex items-center gap-2">
+    <button
+      className="btn-secondary"
+      onClick={handleDilute}
+      disabled={!state.activeSolution}
+    >
+      <Droplets size={18} />
+      Dilute
+    </button>
+    <input
+      type="number"
+      className="w-16 px-2 py-1 border rounded dark:bg-slate-700 dark:border-slate-600"
+      value={dilutionAmount}
+      onChange={(e) => setDilutionAmount(Math.max(0, parseInt(e.target.value) || 0))}
+      min="0"
+      max="100"
+    />
+    <span className="text-sm">mL</span>
+  </div>
+  
+  <div className="flex items-center gap-2">
+    <button
+      className="btn-secondary"
+      onClick={handleReduceVolume}
+      disabled={!state.activeSolution}
+    >
+      <Scissors size={18} />
+      Reduce
+    </button>
+    <input
+      type="number"
+      className="w-16 px-2 py-1 border rounded dark:bg-slate-700 dark:border-slate-600"
+      value={reductionAmount}
+      onChange={(e) => setReductionAmount(Math.max(0, parseInt(e.target.value) || 0))}
+      min="0"
+      max="100"
+    />
+    <span className="text-sm">mL</span>
+  </div>
+  
+  <button
+    className="btn-secondary"
+    onClick={handleHeatSolution}
+    disabled={!state.activeSolution}
+  >
+    <Flame size={18} />
+    Heat
+  </button>
+  
+  <button
+    className="btn-secondary"
+    onClick={handleCheckSolution}
+    disabled={!state.currentSolution}
+  >
+    <Info size={18} />
+    Check
+  </button>
+  
+  <button
+    className="btn-danger"
+    onClick={() => dispatch({ type: 'RESTART_LEVEL' })}
+  >
+    <Trash2 size={18} />
+    Reset
+  </button>
+  <div className="flex flex-wrap gap-2 mb-4">
+  
+  <button
+    className="btn-secondary"
+    onClick={() => dispatch({ type: 'RETURN_TO_MENU' })}
+  >
+    <Home size={18} />
+    Menu
+  </button>
+</div>
+</div>
+
+{/* Add this section to display the active solution */}
+{state.activeSolution && (
+  <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+    <h3 className="text-md font-medium mb-1">Active Solution</h3>
+    <p className="text-sm">{state.activeSolution.name} - {state.activeSolution.formula}</p>
+    <p className="text-sm">{state.activeSolution.concentration.toFixed(2)}M, {state.activeSolution.volume.toFixed(1)}mL</p>
+  </div>
+)}
+
+{state.message && (
+  <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
+    {state.message}
+  </div>
+)}  </div>
   );
 };
 

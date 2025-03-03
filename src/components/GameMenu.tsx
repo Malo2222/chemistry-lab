@@ -27,7 +27,7 @@ const GameMenu: React.FC = () => {
   };
   
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+    <div className="dark">
       <div className="text-center mb-8">
         <div className="flex justify-center mb-4">
           <div className="relative">
@@ -37,7 +37,7 @@ const GameMenu: React.FC = () => {
             </div>
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Chemistry Lab: Dilution Master</h1>
+        <h1 className="text-3xl font-bold .text-white-800 { mb-2">Chemistry Lab: Dilution Master</h1>
         <p className="text-gray-600 max-w-2xl mx-auto">
           Master the concepts of molarity, molality, and dilution through interactive challenges. 
           Mix chemicals, perform dilutions, and create solutions with precise concentrations.
@@ -56,10 +56,10 @@ const GameMenu: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center mb-4">
           <BookOpen className="h-5 w-5 text-indigo-600 mr-2" />
-          <h2 className="text-xl font-semibold text-gray-800">How to Play</h2>
+          <h2 className="text-xl font-semibold text-white-800">How to Play</h2>
         </div>
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <ol className="list-decimal pl-5 space-y-2 text-gray-700">
+        <div className="dark">
+          <ol className="list-decimal pl-5 space-y-2 text-white-700">
             <li><strong>Select chemicals</strong> from your inventory by clicking on them</li>
             <li><strong>Dilute solutions</strong> by adding water to decrease concentration but increase volume</li>
             <li><strong>Mix compatible solutions</strong> to combine their volumes and solutes</li>
@@ -77,7 +77,7 @@ const GameMenu: React.FC = () => {
       </div>
       
       <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Select a Level</h2>
+        <h2 className="text-xl font-semibold text-white-800 mb-4">Select a Level</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {state.levels.map((level) => (
             <div 
@@ -86,7 +86,7 @@ const GameMenu: React.FC = () => {
               onClick={() => handleSelectLevel(level.id)}
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-medium text-gray-800">
+                <h3 className="font-medium text-white-800">
                   Level {level.id}: {level.name}
                 </h3>
                 {renderDifficultyBadge(level.difficulty)}

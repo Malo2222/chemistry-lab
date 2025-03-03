@@ -8,9 +8,10 @@ const initialState: GameState = {
   inventory: [],
   activeSolution: null,
   targetSolution: null,
+  currentSolution: null,
   score: 0,
   attempts: 0,
-  actionsRemaining: null, // Track remaining actions
+  actionsRemaining: null,
   gameStatus: 'menu',
   message: 'Welcome to Chemistry Lab: Dilution Master!',
 };
@@ -39,6 +40,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           concentration: state.levels[0].targetSolution.concentration,
           volume: state.levels[0].targetSolution.volume,
         },
+        currentSolution: null, // Reset current solution
         actionsRemaining: state.levels[0].maxActions || null,
         message: `Level 1: ${state.levels[0].name}`,
       };
@@ -62,38 +64,73 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           concentration: state.levels[levelIndex].targetSolution.concentration,
           volume: state.levels[levelIndex].targetSolution.volume,
         },
+        currentSolution: null, // Reset current solution
         actionsRemaining: state.levels[levelIndex].maxActions || null,
         message: `Level ${action.payload}: ${state.levels[levelIndex].name}`,
       };
       
     case 'SELECT_CHEMICAL':
+      const selectedChemical = state.inventory.find(chem => chem.id === action.payload);
       return {
         ...state,
-        activeSolution: state.inventory.find(chem => chem.id === action.payload) || null,
+        activeSolution: selectedChemical || null,
+        currentSolution: selectedChemical || state.currentSolution, // Update current solution when selecting a chemical
+        message: selectedChemical 
+          ? `Selected: ${selectedChemical.name}` 
+          : 'No chemical selected'
       };
       
     case 'MIX_SOLUTIONS':
       const { solution1, solution2, resultId } = action.payload;
       
-      // Calculate new concentration and volume
-      const totalVolume = solution1.volume + solution2.volume;
-      const totalMoles = (solution1.concentration * solution1.volume / 1000) + 
-                         (solution2.concentration * solution2.volume / 1000);
-      const newConcentration = totalMoles / (totalVolume / 1000);
+      // Get current level to check for reactions
+      const currentLvl = state.levels[state.currentLevel - 1];
       
-      // Create new solution
-      const newSolution: Chemical = {
-        id: resultId,
-        name: solution1.name,
-        formula: solution1.formula,
-        color: solution1.color,
-        concentration: newConcentration,
-        volume: totalVolume,
-        state: solution1.state, // Maintain the state
-      };
+      // Check if these two solutions have a reaction when mixed
+      // Only check if reactions exist for the level
+      const mixReaction = currentLvl.reactions?.find(r => 
+        r.type === 'mix' && 
+        ((r.reactant === solution1.formula && (r.reactant2 === solution2.formula || r.secondReactant === solution2.formula)) ||
+         (r.reactant === solution2.formula && (r.reactant2 === solution1.formula || r.secondReactant === solution1.formula)))
+      );
+      
+      let mixedSolution: Chemical;
+      
+      if (mixReaction) {
+        // Apply the reaction to create a new product
+        mixedSolution = {
+          id: resultId,
+          name: mixReaction.productName || `${solution1.name} + ${solution2.name}`,
+          formula: mixReaction.product,
+          color: mixReaction.productColor || solution1.color,
+          // Fall back to standard concentration calculation if no specific value
+          concentration: mixReaction.productConcentration !== undefined 
+            ? mixReaction.productConcentration
+            : ((solution1.concentration * solution1.volume) + (solution2.concentration * solution2.volume)) / (solution1.volume + solution2.volume),
+          volume: solution1.volume + solution2.volume,
+          state: mixReaction.productState || 'liquid',
+        };
+      } else {
+        // No reaction - just mix the solutions
+        const totalVolume = solution1.volume + solution2.volume;
+        const totalMoles = (solution1.concentration * solution1.volume / 1000) + 
+                          (solution2.concentration * solution2.volume / 1000);
+        const newConcentration = totalMoles / (totalVolume / 1000);
+        
+        // Create new solution
+        mixedSolution = {
+          id: resultId,
+          name: `${solution1.name} + ${solution2.name}`,
+          formula: `${solution1.formula} + ${solution2.formula}`,
+          color: solution1.color, // Could blend colors based on ratio
+          concentration: newConcentration,
+          volume: totalVolume,
+          state: solution1.state, // Maintain the state
+        };
+      }
       
       // Remove the original solutions and add the new one
-      const updatedInventory = state.inventory.filter(
+      const updatedInventoryAfterMix = state.inventory.filter(
         chem => chem.id !== solution1.id && chem.id !== solution2.id
       );
 
@@ -104,18 +141,25 @@ const gameReducer = (state: GameState, action: Action): GameState => {
       if (actionsAfterMix === 0) {
         return {
           ...state,
-          inventory: [...updatedInventory, newSolution],
-          activeSolution: newSolution,
+          inventory: [...updatedInventoryAfterMix, mixedSolution],
+          activeSolution: mixedSolution,
+          currentSolution: mixedSolution,
           actionsRemaining: actionsAfterMix,
-          message: "You've used all your available actions! Check your solution or restart.",
+          message: mixReaction 
+            ? `Reaction occurred: ${solution1.formula} + ${solution2.formula} → ${mixedSolution.formula}. You've used all your available actions!`
+            : "You've used all your available actions! Check your solution or restart.",
         };
       }
       
       return {
         ...state,
-        inventory: [...updatedInventory, newSolution],
-        activeSolution: newSolution,
+        inventory: [...updatedInventoryAfterMix, mixedSolution],
+        activeSolution: mixedSolution,
+        currentSolution: mixedSolution,
         actionsRemaining: actionsAfterMix,
+        message: mixReaction 
+          ? `Reaction occurred: ${solution1.formula} + ${solution2.formula} → ${mixedSolution.formula}`
+          : `Mixed ${solution1.formula} with ${solution2.formula}`,
       };
       
     case 'DILUTE_SOLUTION':
@@ -167,6 +211,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           ...state,
           inventory: [...inventoryAfterDilution, dilutedSolution],
           activeSolution: dilutedSolution,
+          currentSolution: dilutedSolution, // Update current solution
           actionsRemaining: actionsAfterDilute,
           message: "You've used all your available actions! Check your solution or restart.",
         };
@@ -176,6 +221,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...state,
         inventory: [...inventoryAfterDilution, dilutedSolution],
         activeSolution: dilutedSolution,
+        currentSolution: dilutedSolution, // Update current solution
         actionsRemaining: actionsAfterDilute,
       };
 
@@ -214,6 +260,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           ...state,
           inventory: [...inventoryAfterReduction, reducedSolution],
           activeSolution: reducedSolution,
+          currentSolution: reducedSolution, // Update current solution
           actionsRemaining: actionsAfterReduce,
           message: "You've used all your available actions! Check your solution or restart.",
         };
@@ -223,6 +270,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...state,
         inventory: [...inventoryAfterReduction, reducedSolution],
         activeSolution: reducedSolution,
+        currentSolution: reducedSolution, // Update current solution
         actionsRemaining: actionsAfterReduce,
       };
 
@@ -276,6 +324,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
           ...state,
           inventory: [...inventoryAfterHeating, heatedSolution],
           activeSolution: heatedSolution,
+          currentSolution: heatedSolution, // Update current solution
           actionsRemaining: actionsAfterHeat,
           message: reaction 
             ? `Reaction occurred: ${heatSolution.formula} → ${heatedSolution.formula}. You've used all your available actions!` 
@@ -287,6 +336,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         ...state,
         inventory: [...inventoryAfterHeating, heatedSolution],
         activeSolution: heatedSolution,
+        currentSolution: heatedSolution, // Update current solution
         actionsRemaining: actionsAfterHeat,
         message: reaction 
           ? `Reaction occurred: ${heatSolution.formula} → ${heatedSolution.formula}` 
@@ -362,6 +412,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         currentLevel: nextLevel,
         inventory: [...nextLevelData.availableChemicals],
         activeSolution: null,
+        currentSolution: null, // Reset current solution
         targetSolution: {
           id: 'target',
           name: nextLevelData.targetSolution.chemical,
@@ -382,6 +433,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         gameStatus: 'playing',
         inventory: [...currentLevelData.availableChemicals],
         activeSolution: null,
+        currentSolution: null, // Reset current solution
         actionsRemaining: currentLevelData.maxActions || null,
         message: `Restarting Level ${state.currentLevel}: ${currentLevelData.name}`,
       };
@@ -394,6 +446,7 @@ const gameReducer = (state: GameState, action: Action): GameState => {
         inventory: [],
         activeSolution: null,
         targetSolution: null,
+        currentSolution: null,
         actionsRemaining: null,
         message: 'Welcome to Chemistry Lab: Dilution Master!',
       };

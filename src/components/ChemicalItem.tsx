@@ -4,21 +4,47 @@ import { useGame } from '../context/GameContext';
 import { Beaker, FlaskRound as Flask, Pipette, CloudSnow, Cloud } from 'lucide-react';
 
 interface ChemicalItemProps {
-  chemical: Chemical;
+  chemical?: Chemical; // Make this optional
   type?: 'beaker' | 'flask' | 'pipette';
 }
 
 const ChemicalItem: React.FC<ChemicalItemProps> = ({ chemical, type = 'beaker' }) => {
   const { state, dispatch } = useGame();
+  
+  // Guard against undefined chemical
+  if (!chemical) {
+    return (
+      <div className="chemical-item empty">
+        <div className={`${type === 'flask' ? 'flask' : 'beaker'} empty`}>
+          {type === 'flask' ? (
+            <>
+              <div className="flask-neck"></div>
+              <div className="flask-body"></div>
+              <div className="flask-base"></div>
+            </>
+          ) : (
+            <>
+              <div className="beaker-body"></div>
+              <div className="beaker-base"></div>
+            </>
+          )}
+        </div>
+        <div className="chemical-info">
+          <span className="chemical-formula">Empty</span>
+        </div>
+      </div>
+    );
+  }
+  
   const isActive = state.activeSolution?.id === chemical.id;
   
   const handleClick = () => {
     dispatch({
-      type: 'SET_ACTIVE_SOLUTION',
-      payload: isActive ? null : chemical,
+      type: 'SELECT_CHEMICAL', // Changed from SET_ACTIVE_SOLUTION to use an existing action type
+      payload: chemical.id
     });
   };
-  
+  state.activeSolution?.id === chemical.id;
   const fillHeight = (chemical.volume / 100) * 100;
   
   const renderBubbles = () => {
@@ -174,6 +200,9 @@ const ChemicalItem: React.FC<ChemicalItemProps> = ({ chemical, type = 'beaker' }
           <span className="chemical-formula">{chemical.formula}</span>
         </div>
         <span className="chemical-volume">{chemical.volume.toFixed(1)} mL</span>
+        <div className="text-xs text-white-600 dark:text-slate-400 mt-1">
+    {chemical.concentration.toFixed(2)} M
+      </div>
         {renderStateLabel()}
       </div>
     </div>

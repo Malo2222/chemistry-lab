@@ -4,6 +4,7 @@ import GameMenu from './components/GameMenu';
 import LabBench from './components/LabBench';
 import GameSuccess from './components/GameSuccess';
 import { FlaskRound as Flask, Github } from 'lucide-react';
+import { Home } from 'lucide-react';
 
 const GameContainer: React.FC = () => {
   const { state } = useGame();
@@ -22,11 +23,11 @@ const GameContainer: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
+    <div className="dark">
       <header className="max-w-6xl mx-auto mb-8 flex justify-between items-center">
         <div className="flex items-center">
           <Flask className="h-8 w-8 text-indigo-600 mr-2" />
-          <h1 className="text-2xl font-bold text-gray-800">Chemistry Lab: Dilution Master</h1>
+          <h1 className="text-2xl font-bold text-white-800">Chemistry Lab: Dilution Master</h1>
         </div>
         <div className="flex items-center text-sm">
           <span className="mr-4">Score: {state.score}</span>
@@ -49,6 +50,7 @@ const GameContainer: React.FC = () => {
         <p>Graham Malone - Extra Credit for Mr. Sandoval's Chemistry Class</p>
       </footer>
     </div>
+    
   );
 };
 

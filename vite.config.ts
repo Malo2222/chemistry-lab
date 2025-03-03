@@ -1,11 +1,20 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-  base: '/chemistry-lab/', // This will be your repository name on GitHub
+  base: '/chemistry-lab/',
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
+    chunkSizeWarningLimit: 1600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          lucide: ['lucide-react']
+        }
+      }
+    }
+  }
 });
