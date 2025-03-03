@@ -1,0 +1,36 @@
+# GitHub Setup Instructions
+
+Run these commands in the terminal to push your project to GitHub:
+
+```bash
+# Navigate to your project directory (if not already there)
+cd /path/to/project
+
+# Initialize Git repository
+git init
+
+# Add all files to staging
+git add .
+
+# Commit the files
+git commit -m "Initial commit"
+
+# Rename the default branch to main
+git branch -M main
+
+# Add the remote repository (replace YOUR-USERNAME with your GitHub username)
+git remote add origin https://github.com/YOUR-USERNAME/chemistry-lab.git
+
+# Push the code to GitHub
+git push -u origin main
+```
+
+After pushing to GitHub:
+
+1. Go to your repository settings on GitHub
+2. Navigate to "Pages" in the left sidebar
+3. Under "Build and deployment", select:
+   - Source: "GitHub Actions"
+4. Your site will be built and deployed automatically when you push to the main branch
+
+Your site will be available at: https://YOUR-USERNAME.github.io/chemistry-lab/ 

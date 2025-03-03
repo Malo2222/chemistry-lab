@@ -1,0 +1,237 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Light theme variables */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  --success-color: #22c55e;
+  --success-hover: #16a34a;
+  
+  /* Container dimensions */
+  --flask-width: 60px;
+  --flask-height: 80px;
+  --beaker-width: 80px;
+  --beaker-height: 60px;
+  --pipette-width: 40px;
+  --pipette-height: 100px;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1e293b;
+  --bg-secondary: #0f172a;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #334155;
+  --accent-color: #60a5fa;
+  --accent-hover: #3b82f6;
+  --danger-color: #f87171;
+  --danger-hover: #ef4444;
+  --success-color: #4ade80;
+  --success-hover: #22c55e;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-900 dark:text-slate-100;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.game-container {
+  @apply max-w-4xl mx-auto p-4;
+}
+
+.level-badge {
+  @apply px-2 py-1 text-xs font-medium rounded-full;
+}
+
+.level-easy {
+  @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100;
+}
+
+.level-medium {
+  @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100;
+}
+
+.level-hard {
+  @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100;
+}
+
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+         disabled:opacity-50 disabled:cursor-not-allowed
+         flex items-center gap-2 transition-colors;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300
+         dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600
+         disabled:opacity-50 disabled:cursor-not-allowed
+         flex items-center gap-2 transition-colors;
+}
+
+.btn-danger {
+  @apply px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700
+         disabled:opacity-50 disabled:cursor-not-allowed
+         flex items-center gap-2 transition-colors;
+}
+
+/* Chemical containers */
+.chemical-item {
+  @apply flex flex-col items-center gap-2 p-2 rounded-lg
+         bg-white dark:bg-slate-800 shadow-sm hover:shadow-md
+         transition-all duration-200;
+}
+
+.chemical-info {
+  @apply text-center space-y-1;
+}
+
+.chemical-formula {
+  @apply text-sm font-medium;
+}
+
+.chemical-volume {
+  @apply text-xs text-slate-600 dark:text-slate-400;
+}
+
+.chemical-state {
+  @apply text-xs px-2 py-0.5 rounded-full
+         bg-slate-100 text-slate-700
+         dark:bg-slate-700 dark:text-slate-300;
+}
+
+/* Flask styles */
+.flask {
+  @apply relative w-[var(--flask-width)] h-[var(--flask-height)];
+}
+
+.flask-neck {
+  @apply absolute top-0 left-1/2 -translate-x-1/2
+         w-4 h-8 bg-slate-200 dark:bg-slate-700
+         rounded-t-lg;
+}
+
+.flask-body {
+  @apply absolute top-8 left-1/2 -translate-x-1/2
+         w-[var(--flask-width)] h-[calc(var(--flask-height)-2rem)]
+         bg-slate-200 dark:bg-slate-700
+         rounded-lg;
+}
+
+.flask-base {
+  @apply absolute bottom-0 left-1/2 -translate-x-1/2
+         w-12 h-2 bg-slate-300 dark:bg-slate-600
+         rounded-b-lg;
+}
+
+/* Beaker styles */
+.beaker {
+  @apply relative w-[var(--beaker-width)] h-[var(--beaker-height)];
+}
+
+.beaker-body {
+  @apply absolute inset-0
+         bg-slate-200 dark:bg-slate-700
+         rounded-lg;
+}
+
+.beaker-base {
+  @apply absolute bottom-0 left-1/2 -translate-x-1/2
+         w-16 h-2 bg-slate-300 dark:bg-slate-600
+         rounded-b-lg;
+}
+
+/* Pipette styles */
+.pipette {
+  @apply relative w-[var(--pipette-width)] h-[var(--pipette-height)];
+}
+
+.pipette-tip {
+  @apply absolute top-0 left-1/2 -translate-x-1/2
+         w-2 h-4 bg-slate-200 dark:bg-slate-700;
+}
+
+.pipette-body {
+  @apply absolute top-4 left-1/2 -translate-x-1/2
+         w-[var(--pipette-width)] h-[calc(var(--pipette-height)-4rem)]
+         bg-slate-200 dark:bg-slate-700
+         rounded-lg;
+}
+
+.pipette-bulb {
+  @apply absolute bottom-0 left-1/2 -translate-x-1/2
+         w-8 h-8 bg-slate-300 dark:bg-slate-600
+         rounded-full;
+}
+
+/* Solution styles */
+.solution {
+  @apply absolute bottom-0 left-0 w-full
+         rounded-b-lg transition-all duration-300;
+}
+
+/* Particle animations */
+.bubble {
+  @apply absolute w-2 h-2 bg-white/30 rounded-full
+         animate-bubble;
+}
+
+.gas-particle {
+  @apply absolute w-1 h-1 bg-white/40 rounded-full
+         animate-gas;
+}
+
+.solid-particle {
+  @apply absolute w-1.5 h-1.5 bg-white/50 rounded
+         animate-solid;
+}
+
+@keyframes bubble {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-100%) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes gas {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-50%) translateX(20px);
+    opacity: 0;
+  }
+}
+
+@keyframes solid {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-20%) rotate(180deg);
+    opacity: 0;
+  }
+}
